@@ -1,0 +1,65 @@
+{
+  "name": "dhara",
+  "version": "1.0.0",
+  "description": "A modern streaming app built with Electron.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "author": "Mahdir Talukder",
+  "license": "MIT",
+  "dependencies": {
+    "hls.js": "^1.1.5",
+    "plyr": "^3.7.8"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.4",
+    "@electron-forge/maker-deb": "^6.0.4",
+    "@electron-forge/maker-rpm": "^6.0.4",
+    "@electron-forge/maker-squirrel": "^6.0.4",
+    "@electron-forge/maker-zip": "^6.0.4",
+    "electron": "^23.0.0"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "icon",
+        "name": "Dhara",
+        "executableName": "dhara",
+        "asar": true,
+        "overwrite": true
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "dhara",
+            "authors": "Mahdir Talukder",
+            "description": "A modern TV streaming app.",
+            "setupIcon": "icon.ico"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {
+            "icon": "icon.png"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {
+            "icon": "icon.png"
+          }
+        }
+      ]
+    }
+  }
+}
