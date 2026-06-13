@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dhara</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #0f0f0f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    #header {
+      width: 100%;
+      background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    #header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #ff4757;
+    }
+
+    /* Search Bar */
+    #searchBar {
+      width: 90%;
+      max-width: 600px;
+      padding: 12px;
+      margin: 20px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      background-color: #2a2a2a;
+      color: white;
+      outline: none;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #searchBar::placeholder {
+      color: #888;
+    }
+
+    /* Channel List */
+    #channelList {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .channelItem {
+      width: 120px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .channelItem:hover {
+      transform: translateY(-5px);
+    }
+
+    .channelLogo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #2a2a2a;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .channelName {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #ccc;
+      font-weight: 500;
+    }
+
+    /* Favorites Section */
+    #favoritesSection {
+      width: 80%;
+      max-width: 1200px;
+      padding: 20px;
+      margin-top: 20px;
+      background-color: #1a1a1a;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #favoritesSection h2 {
+      margin: 0 0 20px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #ff4757;
+    }
+
+    #favoritesList {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 10px;
+    }
+
+    .favoriteItem {
+      width: 80px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .favoriteItem:hover {
+      transform: translateY(-5px);
+    }
+
+    .favoriteLogo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #2a2a2a;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .favoriteName {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #ccc;
+      font-weight: 500;
+    }
+
+    /* Video Player Overlay */
+    #videoOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #plyrPlayer {
+      width: 90%;
+      max-width: 800px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #closeButton {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #ff4757;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #closeButton:hover {
+      background-color: #ff6b81;
+    }
+
+    /* Favorite Icon */
+    .favorite {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 50%;
+      padding: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .favorite:hover {
+      background-color: rgba(255, 71, 87, 0.8);
+    }
+
+    .favorite.active {
+      background-color: #ff4757;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .channelItem {
+        width: 100px;
+      }
+
+      .channelLogo {
+        width: 80px;
+        height: 80px;
+      }
+
+      .favoriteItem {
+        width: 70px;
+      }
+
+      .favoriteLogo {
+        width: 50px;
+        height: 50px;
+      }
+
+      #plyrPlayer {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>Dhara</h1>
+    <input type="text" id="searchBar" placeholder="Search channels..." />
+  </div>
+  <div id="favoritesSection">
+    <h2>Favorites</h2>
+    <div id="favoritesList"></div>
+  </div>
+  <div id="channelList"></div>
+
+  <!-- Video Player Overlay -->
+  <div id="videoOverlay">
+    <button id="closeButton">×</button>
+    <div id="plyrPlayer"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const videoOverlay = document.getElementById('videoOverlay');
+    const closeButton = document.getElementById('closeButton');
+    const channelList = document.getElementById('channelList');
+    const favoritesList = document.getElementById('favoritesList');
+    const searchBar = document.getElementById('searchBar');
+    const jsonUrl = 'https://raw.githubusercontent.com/abusaeeidx/Toffee-playlist/refs/heads/main/NS_player.m3u';
+
+    let hls = null; // Declare hls globally
+    let channels = []; // Store all channels
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || {}; // Load favorites from localStorage
+    let player = null; // Declare Plyr player globally
+
+    // Function to load and play a channel
+    function playChannel(streamUrl, userAgent, cookie) {
+      // Destroy existing HLS instance if it exists
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+
+      // Destroy existing Plyr player if it exists
+      if (player) {
+        player.destroy();
+        player = null;
+      }
+
+      // Clear the Plyr player container
+      document.getElementById('plyrPlayer').innerHTML = '';
+
+      // Create a new video element for Plyr
+      const video = document.createElement('video');
+      video.id = 'videoPlayer';
+      video.style.width = '100%';
+      video.style.height = '100%';
+      document.getElementById('plyrPlayer').appendChild(video);
+
+      // Initialize Plyr
+      player = new Plyr(video, {
+        controls: [
+          'play-large',
+          'play',
+          'progress',
+          'current-time',
+          'mute',
+          'volume',
+          'settings',
+          'fullscreen',
+        ],
+        fullscreen: { enabled: true, iosNative: true },
+      });
+
+      // Send headers to the main process
+      ipcRenderer.send('set-headers', { userAgent, cookie });
+
+      // Wait for headers to be set before loading the stream
+      ipcRenderer.once('headers-set', () => {
+        if (Hls.isSupported()) {
+          hls = new Hls();
+          hls.loadSource(streamUrl);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            console.log('Stream loaded successfully');
+            videoOverlay.style.display = 'flex'; // Show the video overlay
+            player.play().catch((error) => {
+              console.error('Error playing video:', error);
+            });
+          });
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            console.error('HLS Error:', data);
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  console.error('Fatal network error encountered, try to recover');
+                  hls.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  console.error('Fatal media error encountered, try to recover');
+                  hls.recoverMediaError();
+                  break;
+                default:
+                  console.error('Unrecoverable error encountered, destroying HLS instance');
+                  hls.destroy();
+                  break;
+              }
+            }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          // Fallback for native HLS support (e.g., Safari)
+          video.src = streamUrl;
+          videoOverlay.style.display = 'flex'; // Show the video overlay
+          video.addEventListener('loadedmetadata', () => {
+            console.log('Stream loaded successfully');
+            player.play().catch((error) => {
+              console.error('Error playing video:', error);
+            });
+          });
+        } else {
+          console.error('HLS is not supported in this browser.');
+          alert('HLS is not supported in this browser.');
+        }
+      });
+    }
+
+    // Function to toggle favorite status
+    function toggleFavorite(channelId, event) {
+      event.stopPropagation(); // Prevent event bubbling to the parent
+      favorites[channelId] = !favorites[channelId];
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+      renderChannels();
+      renderFavorites();
+    }
+
+    // Function to render channels
+    function renderChannels(filter = '') {
+      channelList.innerHTML = '';
+      channels
+        .filter((channel) => channel.name.toLowerCase().includes(filter.toLowerCase()))
+        .forEach((channel) => {
+          const channelItem = document.createElement('div');
+          channelItem.className = 'channelItem';
+          channelItem.innerHTML = `
+            <div style="position: relative;">
+              <img src="${channel.logo}" alt="${channel.name}" class="channelLogo" />
+              <div class="favorite ${favorites[channel.name] ? 'active' : ''}" onclick="toggleFavorite('${channel.name}', event)">❤️</div>
+            </div>
+            <div class="channelName">${channel.name}</div>
+          `;
+          channelItem.addEventListener('click', () => {
+            playChannel(channel.link, channel.userAgent, channel.cookie);
+          });
+          channelList.appendChild(channelItem);
+        });
+    }
+
+    // Function to render favorites
+    function renderFavorites() {
+      favoritesList.innerHTML = '';
+      Object.keys(favorites).forEach((channelId) => {
+        const channel = channels.find((c) => c.name === channelId);
+        if (channel && favorites[channelId]) {
+          const favoriteItem = document.createElement('div');
+          favoriteItem.className = 'favoriteItem';
+          favoriteItem.innerHTML = `
+            <div style="position: relative;">
+              <img src="${channel.logo}" alt="${channel.name}" class="favoriteLogo" />
+              <div class="favorite active" onclick="toggleFavorite('${channel.name}', event)">❤️</div>
+            </div>
+            <div class="favoriteName">${channel.name}</div>
+          `;
+          favoriteItem.addEventListener('click', () => {
+            playChannel(channel.link, channel.userAgent, channel.cookie);
+          });
+          favoritesList.appendChild(favoriteItem);
+        }
+      });
+    }
+
+    // Function to fetch and display the channel list
+    async function loadChannels() {
+      try {
+        const response = await fetch(jsonUrl);
+        channels = await response.json();
+        renderChannels();
+        renderFavorites();
+      } catch (error) {
+        console.error('Error loading channels:', error);
+        alert('Failed to load channels. Check the console for details.');
+      }
+    }
+
+    // Search functionality
+    searchBar.addEventListener('input', (e) => {
+      renderChannels(e.target.value);
+    });
+
+    // Close video overlay
+    closeButton.addEventListener('click', () => {
+      videoOverlay.style.display = 'none';
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+      if (player) {
+        player.destroy();
+        player = null;
+      }
+      document.getElementById('plyrPlayer').innerHTML = ''; // Clear the video element
+    });
+
+    // Load the channels when the page loads
+    loadChannels();
+  </script>
+</body>
+</html>
